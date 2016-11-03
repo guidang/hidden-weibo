@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "微博隐藏",
+  "name": "微博批量隐藏",
   "version": "1.0",
   "description": "新浪微博批量设置隐藏工具",
   "icons": {

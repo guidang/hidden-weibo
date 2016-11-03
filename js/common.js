@@ -22,7 +22,7 @@ $(function () {
         var newWbUrl = wbUrl.replace(/page=(\d*)/, "page=" + newPage);
         console.log(newWbUrl);
 
-        var feedList = $('.WB_feed_v4').children('div');
+        var feedList = $('.WB_feed').children('div');
 
         var doCount = 0;
 
