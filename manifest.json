@@ -1,16 +1,24 @@
 {
   "manifest_version": 2,
-  "name": "微博批量隐藏",
-  "version": "1.0",
-  "description": "新浪微博批量设置隐藏工具",
+  "name": "微博批量隐藏(个人可见)",
+  "version": "1.0.1",
+  "description": "新浪微博批量设置隐藏(个人可见)工具",
   "icons": {
-        "16": "images/icon16.png",
-        "48": "images/icon48.png",
-        "128": "images/icon128.png"
-    },
+      "16": "images/icon16.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
+  },
+  "browser_action": {
+      "default_icon": {
+          "16": "images/icon16.png",
+          "48": "images/icon48.png"
+      },
+      "default_title": "微博隐藏设置",
+      "default_popup": "popup.html"
+  },
   "content_scripts": [
       {
-          "matches": ["*://weibo.com/p/*"],
+          "matches": ["*://weibo.com/*"],
           "js": [
               "js/jquery-3.1.1.min.js",
               "js/common.js"

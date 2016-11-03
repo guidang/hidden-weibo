@@ -1,8 +1,9 @@
-#hidden-all {
+#hidden-all,
+#do-hidden-all {
     position: fixed;
-    bottom: 100px;
+    bottom: 20%;
     left: 50px;
-    width: 60px;
+    width: 66px;
     height: 30px;
     line-height: 30px;
     background-color: blueviolet;
@@ -12,4 +13,8 @@
     font-weight: bold;
     border-radius: 3px;
     color: #ffffff;
+}
+
+#do-hidden-all {
+    bottom: 25%;
 }

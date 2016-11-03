@@ -3,41 +3,68 @@
  */
 $(function () {
 
+    var wbUrl = window.location.href;
+    //console.log(wbUrl);
+
+    var page_id = getQueryString('page_id');
+    if ((page_id != undefined) && (page_id == 'true')) {
+        //var pageIdObj = $('.lev_line');
+        //console.log(pageIdObj[1].outerHTML);
+        
+        var newWbUrl = wbUrl.replace(/\/home/, "");
+        newWbUrl = newWbUrl.replace(/page_id=true/, "page=1&auto=true");
+
+        console.log(newWbUrl);
+        location.href = newWbUrl;
+    }
+
+    var auto = getQueryString('auto');
+    if ((auto != undefined) && (auto == 'true')) {
+        //console.log("auto");
+        do_hidden();
+    }
+
     var allCount = 0;
     var errMid = [];
 
     var hiddenHtml = "<div id='hidden-all'>一键隐藏</div>"
+    var doHiddenHtml = "<div id='do-hidden-all'>手动隐藏</div>"
     $('body').append(hiddenHtml);
+    $('body').append(doHiddenHtml);
+
 
     /**
      * 操作隐藏
      */
     function do_hidden() {
         var page = getQueryString('page');
+        if (page == undefined) {
+            page = 1;
+        }
         page = parseInt(page);
-        console.log('page: ' + page);
+        //console.log('page: ' + page);
 
         var newPage = parseInt(page) + 1;
-        var wbUrl = window.location.href;
         var newWbUrl = wbUrl.replace(/page=(\d*)/, "page=" + newPage);
-        console.log(newWbUrl);
+        //console.log('newWbUrl', newWbUrl);
 
         var feedList = $('.WB_feed').children('div');
 
         var doCount = 0;
 
         var midArr = [];
-
+        //console.log('feedList', feedList);
         $.each(feedList, function (i, o) {
             var oHtml = o.outerHTML;
 
             var reg = /mid\=\"(\d*)\"\s/;
             var d = reg.exec(oHtml);
-
+            //console.log('d', d);
             if (d && d[1]) {
                 midArr.push(d[1]);
             }
         });
+        //console.log(midArr);
 
         var hiddenUrl = "http://weibo.com/p/aj/v6/mblog/modifyvisible?ajwvr=6&domain=100505&__rnd=";
         var midLen = midArr.length;
@@ -57,6 +84,7 @@ $(function () {
                 type: "POST",
                 data: data,
                 dataType: "JSON",
+                timeout: 5000,
                 success: function (d) {
                     doCount ++;
 
@@ -82,6 +110,10 @@ $(function () {
                         }
                     }
                     //show_result();
+                },
+                error: function(d) {
+                    doCount ++;
+                    errMid.push(v);
                 }
             })
         });
@@ -89,7 +121,19 @@ $(function () {
     }
 
 
+    //点击转跳到官网页
     $('#hidden-all').on('click', function() {
+        var goUrl = 'http://weibo.com?page_id=true';
+        var page = getQueryString('page');
+        if (page) {
+            goUrl += '&page=' + page;
+        }
+        location.href = goUrl;
+        //do_hidden();
+   });
+
+    //手动隐藏
+    $('#do-hidden-all').on('click', function() {
         do_hidden();
    });
 
