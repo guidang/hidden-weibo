@@ -4,29 +4,39 @@
 $(function () {
 
     var wbUrl = window.location.href;
+    var newWbUrl;
+    var allCount = 0;
+    var errMid = [];
     //console.log(wbUrl);
 
+    //去除 home
     var page_id = getQueryString('page_id');
     if ((page_id != undefined) && (page_id == 'true')) {
         //var pageIdObj = $('.lev_line');
         //console.log(pageIdObj[1].outerHTML);
         
-        var newWbUrl = wbUrl.replace(/\/home/, "");
+        newWbUrl = wbUrl.replace(/\/home/, "");
         newWbUrl = newWbUrl.replace(/page_id=true/, "page=1&auto=true");
 
-        console.log(newWbUrl);
+        //console.log(newWbUrl);
         location.href = newWbUrl;
     }
 
+    //自动触发隐藏功能
     var auto = getQueryString('auto');
     if ((auto != undefined) && (auto == 'true')) {
         //console.log("auto");
-        do_hidden();
+        //do_hidden();
+        doHidden();
     }
 
-    var allCount = 0;
-    var errMid = [];
+    //所有操作的总次数
+    var count = getQueryString('count');
+    if (count != undefined) {
+        allCount = parseInt(count);
+    }
 
+    //添加按键内置到微博
     var hiddenHtml = "<div id='hidden-all'>一键隐藏</div>"
     var doHiddenHtml = "<div id='do-hidden-all'>手动隐藏</div>"
     $('body').append(hiddenHtml);
@@ -37,6 +47,7 @@ $(function () {
      * 操作隐藏
      */
     function do_hidden() {
+        //取得当前页码
         var page = getQueryString('page');
         if (page == undefined) {
             page = 1;
@@ -44,15 +55,17 @@ $(function () {
         page = parseInt(page);
         //console.log('page: ' + page);
 
+        //下一页的 URL
         var newPage = parseInt(page) + 1;
-        var newWbUrl = wbUrl.replace(/page=(\d*)/, "page=" + newPage);
+        newWbUrl = wbUrl.replace(/page=(\d*)/, "page=" + newPage);
         //console.log('newWbUrl', newWbUrl);
 
+        var doCount = 0;
+        var midArr = [];
+
+        /*
         var feedList = $('.WB_feed').children('div');
 
-        var doCount = 0;
-
-        var midArr = [];
         //console.log('feedList', feedList);
         $.each(feedList, function (i, o) {
             var oHtml = o.outerHTML;
@@ -63,13 +76,28 @@ $(function () {
             if (d && d[1]) {
                 midArr.push(d[1]);
             }
+        });*/
+
+        //微博列表，取 mid
+        var feedList = $('.WB_cardwrap.WB_feed_type');
+        $.each(feedList, function (i, o) {
+            var myMid = $(o).attr('mid');
+            if (myMid!= undefined) {
+                midArr.push(myMid);
+            }
         });
+
+        //当前页取不到数据，刷新当前页
+        if (midArr.length == 0) {
+            window.location.reload();
+        }
         //console.log(midArr);
 
         var hiddenUrl = "http://weibo.com/p/aj/v6/mblog/modifyvisible?ajwvr=6&domain=100505&__rnd=";
         var midLen = midArr.length;
 
         $.each(midArr, function (i, v) {
+            //操作隐藏触发的 URL
             var timestamp = new Date().getTime();
             var url = hiddenUrl + timestamp;
 
@@ -92,28 +120,25 @@ $(function () {
                         allCount ++;
                         //console.log('success');
                     } else {
+                        //添加错误id
                         errMid.push(v);
                         //console.log(d.code);
                     }
 
-
+                    //展示结果
                     if (doCount == midLen) {
-                        console.log('errMid', errMid);
-                        console.log('doCount', doCount);
-                        console.log('allCount', allCount);
-
-                        var msg = "成功处理: " + doCount + " 条\r\n" + "错误信息: " + errMid.length + "条\r\n将转跳至第" + newPage + "页";
-                        if (confirm(msg)) {
-                            window.location.href = newWbUrl;
-                        } else {
-                            console.log("取消转跳");
-                        }
+                        showResert();
                     }
                     //show_result();
                 },
                 error: function(d) {
+                    //已执行次数
                     doCount ++;
+                    //添加错误id
                     errMid.push(v);
+                    if (doCount == midLen) {
+                        showResert();
+                    }
                 }
             })
         });
@@ -121,7 +146,7 @@ $(function () {
     }
 
 
-    //点击转跳到官网页
+    //点击转跳到官网页，取个人微博列表地址
     $('#hidden-all').on('click', function() {
         var goUrl = 'http://weibo.com?page_id=true';
         var page = getQueryString('page');
@@ -134,14 +159,54 @@ $(function () {
 
     //手动隐藏
     $('#do-hidden-all').on('click', function() {
-        do_hidden();
+        //do_hidden();
+        doHidden();
    });
 
-    function go_bottom() {
+    /**
+     * 转跳到底部，且 15s 后开始设置隐藏
+     * @return {[type]} [description]
+     */
+    function doHidden() {
+        goBottom();
+        setTimeout(do_hidden, 15000);
+    }
+
+    /**
+     * 显示结果
+     * @return {[type]} [description]
+     */
+    function showResert() {
+        //统计成功数量
+        newWbUrl = newWbUrl.replace(/count=(\d*)/, "count=" + allCount);
+        //转跳至下一页
+        window.location.href = newWbUrl;
+
+        //console.log('allCount', allCount);
+        //var msg = "成功处理: " + allCount + "条信息"; 
+        //var msg = "成功处理: " + doCount + " 条\r\n" + "错误信息: " + errMid.length + "条\r\n将转跳至第" + newPage + "页";
+        /*
+        if (confirm(msg)) {
+            window.location.href = newWbUrl;
+        } else {
+            console.log("取消转跳");
+        }*/
+    }
+
+    /**
+     * 划动至底部 (懒加载完所有数据)
+     * @return {[type]} [description]
+     */
+    function goBottom() {
+        //++i;
         if ($(window).scrollTop() < $(document).height() - $(window).height()){
             $('html, body').animate({scrollTop: $(document).height()}, 0, 'swing', function() {
-                console.log(123);
+                //console.log(i);
+                setTimeout(goBottom, 5000);
+                //goBottom();
+                return;
             }); 
+            return;
         }
     }
 
